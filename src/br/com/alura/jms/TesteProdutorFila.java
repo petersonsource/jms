@@ -9,42 +9,36 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-public class TesteConsumidor {
+public class TesteProdutorFila {
 
 	public static void main(String[] args) throws Exception {
 
 		InitialContext context = new InitialContext();
 		ConnectionFactory factory = (ConnectionFactory) context.lookup("ConnectionFactory");
-		Connection connection = factory.createConnection();
+		Connection connection = factory.createConnection("user", "user");
 		connection.start();
 		
 		Session session =  connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		
 		Destination fila = (Destination) context.lookup("financeiro");	
-		MessageConsumer consumer = session.createConsumer(fila);
+		MessageProducer producer = session.createProducer(fila);
 		
-		consumer.setMessageListener(new MessageListener() {
-			
-			@Override
-			public void onMessage(Message message) {
-				
-				TextMessage textMessage = (TextMessage) message;
-				
-				
-				try {
-					System.out.println(textMessage.getText());
-				} catch (JMSException e) {
-					e.printStackTrace();
-				}
-				
-			}
-		});
-			
-		new Scanner(System.in).nextLine();
+		Message message = session.createTextMessage("<pedido><id>13</id></pedido>");
+		producer.send(message);
+		
+//		for (int i=0; i <1000; i++) {
+//			
+//			Message message = session.createTextMessage("<pedido><id>"+ i +"</id></pedido>");
+//			producer.send(message);
+//			
+//		}
+					
+		//new Scanner(System.in).nextLine();
 
 		connection.close();
 		context.close();
